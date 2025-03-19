@@ -7,12 +7,12 @@ import (
 )
 
 type AlbumViewModel struct {
-	Id     *int             `json:"id, omitempty"`
+	Id     *int             `json:"id,omitempty"`
 	Title  string           `json:"title"`
 	Price  float64          `json:"price"`
 	Artist *ArtistViewModel `json:"artist,omitempty"`
 	Band   *BandViewModel   `json:"band,omitempty"`
-	Songs  []SongViewModel  `json:"songs"`
+	Songs  []SongViewModel  `json:"songs,omitempty"`
 }
 
 func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
@@ -23,6 +23,7 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 			Id:    &album.ID,
 			Title: album.Title,
 			Price: album.Price,
+			Songs: []SongViewModel{},
 		}
 
 		if album.ArtistID != nil {
