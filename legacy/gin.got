@@ -1,0 +1,66 @@
+/*package legacy
+
+import (
+	"example/web-service-gin"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func getAlbumsGin(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, main.albums)
+}
+
+func getAlbumByIDGin(c *gin.Context) {
+	id := c.Param("id")
+
+	for _, a := range main.albums {
+		if a.ID == id {
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+}
+
+func postAlbumsGin(c *gin.Context) {
+	var newAlbum main.album
+
+	if err := c.BindJSON(&newAlbum); err != nil {
+		return
+	}
+
+	main.albums = append(main.albums, newAlbum)
+	c.IndentedJSON(http.StatusCreated, newAlbum)
+}
+
+func updateAlbumByIDGin(c *gin.Context) {
+	id := c.Param("id")
+	var updatedAlbum main.album
+
+	if err := c.BindJSON(&updatedAlbum); err != nil {
+		return
+	}
+
+	for i, a := range main.albums {
+		if a.ID == id {
+			main.albums[i] = updatedAlbum
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+}
+
+func deleteAlbumByIDGin(c *gin.Context) {
+	id := c.Param("id")
+
+	for i, a := range main.albums {
+		if a.ID == id {
+			main.albums = append(main.albums[:i], main.albums[i+1:]...)
+			c.IndentedJSON(http.StatusOK, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+}
+*/

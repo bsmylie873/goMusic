@@ -1,0 +1,63 @@
+/*package legacy
+
+import (
+	"example/web-service-gin"
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
+
+func getAlbumsEcho(c echo.Context) error {
+	return c.JSON(http.StatusOK, main.albums)
+}
+
+func getAlbumByIDEcho(c echo.Context) error {
+	id := c.Param("id")
+
+	for _, a := range main.albums {
+		if a.ID == id {
+			return c.JSON(http.StatusOK, a)
+		}
+	}
+	return c.JSON(http.StatusNotFound, map[string]string{"message": "album not found"})
+}
+
+func postAlbumsEcho(c echo.Context) error {
+	var newAlbum main.album
+
+	if err := c.Bind(&newAlbum); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid request"})
+	}
+
+	main.albums = append(main.albums, newAlbum)
+	return c.JSON(http.StatusCreated, newAlbum)
+}
+
+func updateAlbumByIDEcho(c echo.Context) error {
+	id := c.Param("id")
+	var updatedAlbum main.album
+
+	if err := c.Bind(&updatedAlbum); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "invalid request"})
+	}
+
+	for i, a := range main.albums {
+		if a.ID == id {
+			main.albums[i] = updatedAlbum
+			return c.JSON(http.StatusOK, updatedAlbum)
+		}
+	}
+	return c.JSON(http.StatusNotFound, map[string]string{"message": "album not found"})
+}
+
+func deleteAlbumByIDEcho(c echo.Context) error {
+	id := c.Param("id")
+
+	for i, a := range main.albums {
+		if a.ID == id {
+			main.albums = append(main.albums[:i], main.albums[i+1:]...)
+			return c.JSON(http.StatusOK, a)
+		}
+	}
+	return c.JSON(http.StatusNotFound, map[string]string{"message": "album not found"})
+}
+*/
