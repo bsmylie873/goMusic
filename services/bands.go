@@ -1,11 +1,14 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/utils"
 	viewModelBand "goMusic/viewModels"
 	"net/http"
+	"time"
 )
 
 func GetBands(w http.ResponseWriter, r *http.Request) {
@@ -76,14 +79,13 @@ func GetBandByID(w http.ResponseWriter, r *http.Request, id int) {
 
 func PostBand(w http.ResponseWriter, r *http.Request) {
 	var newBand models.Band
-	if err := json.NewDecoder(r.Body).Decode(&newBand); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+
+	if !utils.DecodeAndValidate(w, r, &newBand) {
 		return
 	}
 
-	_, err := db.DB.Exec("INSERT INTO bands (id, name, nationality, number_of_members, date_formed, age, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		newBand.Id, newBand.Name, newBand.Nationality, newBand.NumberOfMembers, newBand.DateFormed, newBand.Age, newBand.Active)
+	_, err := db.DB.Exec("INSERT INTO bands (name, nationality, number_of_members, date_formed, age, active) VALUES (?, ?, ?, ?, ?, ?)",
+		newBand.Name, newBand.Nationality, newBand.NumberOfMembers, newBand.DateFormed, newBand.Age, newBand.Active)
 	if err != nil {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -94,9 +96,8 @@ func PostBand(w http.ResponseWriter, r *http.Request) {
 
 func UpdateBandByID(w http.ResponseWriter, r *http.Request, id int) bool {
 	var updatedBand models.Band
-	if err := json.NewDecoder(r.Body).Decode(&updatedBand); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+
+	if !utils.DecodeAndValidate(w, r, &updatedBand) {
 		return false
 	}
 
@@ -112,11 +113,26 @@ func UpdateBandByID(w http.ResponseWriter, r *http.Request, id int) bool {
 }
 
 func DeleteBandByID(w http.ResponseWriter, r *http.Request, id int) bool {
-	_, err := db.DB.Exec("DELETE FROM bands WHERE id = ?", id)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := db.DB.BeginTx(ctx, nil)
 	if err != nil {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return false
 	}
+	_, err = tx.ExecContext(ctx, "DELETE FROM bands WHERE id = ?", id)
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return false
+	}
+
+	if err = tx.Commit(); err != nil {
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return false
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 	return true
 }

@@ -1,16 +1,19 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/utils"
 	viewModelArtist "goMusic/viewModels"
 	"net/http"
+	"time"
 )
 
 func GetArtists(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.DB.Query("SELECT id, first_name, alst_name, nationality, birth_date, age, alive, sex_id, title_id, band_id FROM artists")
+	rows, err := db.DB.Query("SELECT id, first_name, last_name, nationality, birth_date, age, alive, sex_id, title_id, band_id FROM artists")
 	if err != nil {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -76,14 +79,13 @@ func GetArtistByID(w http.ResponseWriter, r *http.Request, id int) {
 
 func PostArtist(w http.ResponseWriter, r *http.Request) {
 	var newArtist models.Artist
-	if err := json.NewDecoder(r.Body).Decode(&newArtist); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+
+	if !utils.DecodeAndValidate(w, r, &newArtist) {
 		return
 	}
 
-	_, err := db.DB.Exec("INSERT INTO artist (id, first_name, last_name, nationality, birth_date, age, alive, sex_id, title_id, band_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-		newArtist.Id, newArtist.FirstName, newArtist.LastName, newArtist.Nationality, newArtist.BirthDate, newArtist.Age, newArtist.Alive, newArtist.SexId, newArtist.TitleId, newArtist.BandId)
+	_, err := db.DB.Exec("INSERT INTO artists (first_name, last_name, nationality, birth_date, age, alive, sex_id, title_id, band_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		newArtist.FirstName, newArtist.LastName, newArtist.Nationality, newArtist.BirthDate, newArtist.Age, newArtist.Alive, newArtist.SexId, newArtist.TitleId, newArtist.BandId)
 	if err != nil {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -94,9 +96,8 @@ func PostArtist(w http.ResponseWriter, r *http.Request) {
 
 func UpdateArtistByID(w http.ResponseWriter, r *http.Request, id int) bool {
 	var updatedArtist models.Artist
-	if err := json.NewDecoder(r.Body).Decode(&updatedArtist); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+
+	if !utils.DecodeAndValidate(w, r, &updatedArtist) {
 		return false
 	}
 
@@ -112,11 +113,27 @@ func UpdateArtistByID(w http.ResponseWriter, r *http.Request, id int) bool {
 }
 
 func DeleteArtistByID(w http.ResponseWriter, r *http.Request, id int) bool {
-	_, err := db.DB.Exec("DELETE FROM artists WHERE id = ?", id)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := db.DB.BeginTx(ctx, nil)
 	if err != nil {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return false
 	}
+
+	_, err = tx.ExecContext(ctx, "DELETE FROM artists WHERE id = ?", id)
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return false
+	}
+
+	if err = tx.Commit(); err != nil {
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return false
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 	return true
 }

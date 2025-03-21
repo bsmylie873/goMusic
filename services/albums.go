@@ -1,12 +1,15 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/utils"
 	viewModelAlbum "goMusic/viewModels"
 	"net/http"
+	"time"
 )
 
 func GetAlbums(w http.ResponseWriter, r *http.Request) {
@@ -99,14 +102,13 @@ func GetAlbumByID(w http.ResponseWriter, r *http.Request, id int) {
 
 func PostAlbum(w http.ResponseWriter, r *http.Request) {
 	var newAlbum models.Album
-	if err := json.NewDecoder(r.Body).Decode(&newAlbum); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+
+	if !utils.DecodeAndValidate(w, r, &newAlbum) {
 		return
 	}
 
-	_, err := db.DB.Exec("INSERT INTO albums (id, title, price, artist_id, band_id) VALUES (?, ?, ?, ?, ?)",
-		newAlbum.ID, newAlbum.Title, newAlbum.Price, newAlbum.ArtistID, newAlbum.BandID)
+	_, err := db.DB.Exec("INSERT INTO albums (title, price, artist_id, band_id) VALUES (?, ?, ?, ?)",
+		newAlbum.Title, newAlbum.Price, newAlbum.ArtistID, newAlbum.BandID)
 	if err != nil {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -117,9 +119,8 @@ func PostAlbum(w http.ResponseWriter, r *http.Request) {
 
 func UpdateAlbumByID(w http.ResponseWriter, r *http.Request, id int) bool {
 	var updatedAlbum models.Album
-	if err := json.NewDecoder(r.Body).Decode(&updatedAlbum); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+
+	if !utils.DecodeAndValidate(w, r, &updatedAlbum) {
 		return false
 	}
 
@@ -135,8 +136,18 @@ func UpdateAlbumByID(w http.ResponseWriter, r *http.Request, id int) bool {
 }
 
 func DeleteAlbumByID(w http.ResponseWriter, r *http.Request, id int) bool {
-	_, err := db.DB.Exec("DELETE FROM albums WHERE id = ?", id)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := db.DB.BeginTx(ctx, nil)
 	if err != nil {
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return false
+	}
+
+	_, err = tx.Exec("DELETE FROM albums WHERE id = ?", id)
+	if err != nil {
+		tx.Rollback()
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return false
 	}

@@ -29,19 +29,19 @@ func InitDB(filepath string) error {
 
 	_, err = DB.Exec(`
 	CREATE TABLE IF NOT EXISTS sexes (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL
 	)`)
 
 	_, err = DB.Exec(`
 	CREATE TABLE IF NOT EXISTS titles (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL
 	)`)
 
 	_, err = DB.Exec(`
 	CREATE TABLE IF NOT EXISTS artists (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		first_name TEXT NOT NULL,
 		last_name TEXT NOT NULL,
 		nationality TEXT NOT NULL,
@@ -58,7 +58,7 @@ func InitDB(filepath string) error {
 
 	_, err = DB.Exec(`
 	CREATE TABLE IF NOT EXISTS bands (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		nationality TEXT,
 		number_of_members INT NOT NULL,
@@ -69,7 +69,7 @@ func InitDB(filepath string) error {
 
 	_, err = DB.Exec(`
 	CREATE TABLE IF NOT EXISTS albums (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		title TEXT NOT NULL,
 		price REAL NOT NULL,
 	    artist_id INT,
@@ -80,7 +80,7 @@ func InitDB(filepath string) error {
 
 	_, err = DB.Exec(`
 	 CREATE TABLE IF NOT EXISTS songs (
-	  id INT PRIMARY KEY,
+	  id INTEGER PRIMARY KEY AUTOINCREMENT,
 	  title TEXT NOT NULL,
 	  length INT NOT NULL,
 	  price REAL NOT NULL,
