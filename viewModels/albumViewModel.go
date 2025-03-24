@@ -26,7 +26,7 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 			Songs: []SongViewModel{},
 		}
 
-		if album.ArtistID != nil {
+		if album.ArtistId != nil {
 			var artist ArtistViewModel
 			var bandName sql.NullString
 			err := db.DB.QueryRow(`
@@ -44,7 +44,7 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 			LEFT JOIN sexes s ON a.sex_id = s.id
 			LEFT JOIN titles t ON a.title_id = t.id
 			LEFT JOIN bands b ON a.band_id = b.id
-			WHERE a.id = ?`, *album.ArtistID,
+			WHERE a.id = ?`, *album.ArtistId,
 			).Scan(
 				&artist.FirstName,
 				&artist.LastName,
@@ -66,11 +66,11 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 			}
 		}
 
-		if album.BandID != nil {
+		if album.BandId != nil {
 			var band BandViewModel
 			err := db.DB.QueryRow(
 				"SELECT name, nationality, number_of_members, date_formed, age, active FROM bands WHERE id = ?",
-				*album.BandID,
+				*album.BandId,
 			).Scan(&band.Name, &band.Nationality, &band.NumberOfMembers, &band.DateFormed, &band.Age, &band.Active)
 
 			if err != nil && err != sql.ErrNoRows {
@@ -95,7 +95,7 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 		Price: album.Price,
 	}
 
-	if album.ArtistID != nil {
+	if album.ArtistId != nil {
 		var artist ArtistViewModel
 		var bandName sql.NullString
 		err := db.DB.QueryRow(`
@@ -113,7 +113,7 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 		LEFT JOIN sexes s ON a.sex_id = s.id
 		LEFT JOIN titles t ON a.title_id = t.id
 		LEFT JOIN bands b ON a.band_id = b.id
-		WHERE a.id = ?`, *album.ArtistID,
+		WHERE a.id = ?`, *album.ArtistId,
 		).Scan(
 			&artist.FirstName,
 			&artist.LastName,
@@ -135,11 +135,11 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 		}
 	}
 
-	if album.BandID != nil {
+	if album.BandId != nil {
 		var band BandViewModel
 		err := db.DB.QueryRow(
 			"SELECT name, nationality, number_of_members, date_formed, age, active FROM bands WHERE id = ?",
-			*album.BandID,
+			*album.BandId,
 		).Scan(&band.Name, &band.Nationality, &band.NumberOfMembers, &band.DateFormed, &band.Age, &band.Active)
 
 		if err != nil && err != sql.ErrNoRows {

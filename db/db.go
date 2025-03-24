@@ -87,9 +87,9 @@ func InitDB(filepath string) error {
 	  album_id INT,
 	  artist_id INT,
 	  band_id INT,
-	  FOREIGN KEY (album_id) REFERENCES albums(id),
-	  FOREIGN KEY (artist_id) REFERENCES artists(id),
-	  FOREIGN KEY (band_id) REFERENCES bands(id)
+	  FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE,
+	  FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE,
+	  FOREIGN KEY (band_id) REFERENCES bands(id) ON DELETE CASCADE
 	)`)
 
 	return err

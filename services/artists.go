@@ -1,14 +1,12 @@
 package services
 
 import (
-	"context"
 	"encoding/json"
 	"goMusic/db"
 	"goMusic/models"
 	"goMusic/utils"
 	viewModelArtist "goMusic/viewModels"
 	"net/http"
-	"time"
 )
 
 func GetArtists(w http.ResponseWriter, r *http.Request) {
@@ -83,11 +81,11 @@ func PostArtist(w http.ResponseWriter, r *http.Request) {
 	if !utils.DecodeAndValidate(w, r, &newArtist) {
 		return
 	}
-
-	_, err := db.DB.Exec("INSERT INTO artists (first_name, last_name, nationality, birth_date, age, alive, sex_id, title_id, band_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	success := utils.ExecuteWithTransaction(w,
+		"INSERT INTO artists (first_name, last_name, nationality, birth_date, age, alive, sex_id, title_id, band_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		newArtist.FirstName, newArtist.LastName, newArtist.Nationality, newArtist.BirthDate, newArtist.Age, newArtist.Alive, newArtist.SexId, newArtist.TitleId, newArtist.BandId)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+
+	if !success {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -101,10 +99,11 @@ func UpdateArtistByID(w http.ResponseWriter, r *http.Request, id int) bool {
 		return false
 	}
 
-	_, err := db.DB.Exec("UPDATE artists SET first_name = ?, last_name = ?, nationality = ?, birth_date = ?, age = ?, alive = ?, sex_id = ?, title_id = ?, band_id = ? WHERE id = ?",
+	success := utils.ExecuteWithTransaction(w,
+		"UPDATE artists SET first_name = ?, last_name = ?, nationality = ?, birth_date = ?, age = ?, alive = ?, sex_id = ?, title_id = ?, band_id = ? WHERE id = ?",
 		updatedArtist.FirstName, updatedArtist.LastName, updatedArtist.Nationality, updatedArtist.BirthDate, updatedArtist.Age, updatedArtist.Alive, updatedArtist.SexId, updatedArtist.TitleId, updatedArtist.BandId, id)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+
+	if !success {
 		return false
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -112,25 +111,12 @@ func UpdateArtistByID(w http.ResponseWriter, r *http.Request, id int) bool {
 	return true
 }
 
-func DeleteArtistByID(w http.ResponseWriter, r *http.Request, id int) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func DeleteArtistByID(w http.ResponseWriter, id int) bool {
+	success := utils.ExecuteWithTransaction(w,
+		"DELETE FROM artists WHERE id = ?",
+		id)
 
-	tx, err := db.DB.BeginTx(ctx, nil)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
-		return false
-	}
-
-	_, err = tx.ExecContext(ctx, "DELETE FROM artists WHERE id = ?", id)
-	if err != nil {
-		tx.Rollback()
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
-		return false
-	}
-
-	if err = tx.Commit(); err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+	if !success {
 		return false
 	}
 

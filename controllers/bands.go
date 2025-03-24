@@ -24,7 +24,7 @@ func RegisterBandRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /bands/{id}", authentication.AuthMiddleware(
 		func(w http.ResponseWriter, r *http.Request) {
 			id, _ := strconv.Atoi(r.PathValue("id"))
-			services.DeleteBandByID(w, r, id)
+			services.DeleteBandByID(w, id)
 		},
 	))
 }

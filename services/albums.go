@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"goMusic/db"
@@ -9,7 +8,6 @@ import (
 	"goMusic/utils"
 	viewModelAlbum "goMusic/viewModels"
 	"net/http"
-	"time"
 )
 
 func GetAlbums(w http.ResponseWriter, r *http.Request) {
@@ -35,12 +33,12 @@ func GetAlbums(w http.ResponseWriter, r *http.Request) {
 
 		if artistID.Valid {
 			id := int(artistID.Int64)
-			album.ArtistID = &id
+			album.ArtistId = &id
 		}
 
 		if bandID.Valid {
 			id := int(bandID.Int64)
-			album.BandID = &id
+			album.BandId = &id
 		}
 
 		albums = append(albums, album)
@@ -79,12 +77,12 @@ func GetAlbumByID(w http.ResponseWriter, r *http.Request, id int) {
 
 		if artistID.Valid {
 			id := int(artistID.Int64)
-			album.ArtistID = &id
+			album.ArtistId = &id
 		}
 
 		if bandID.Valid {
 			id := int(bandID.Int64)
-			album.BandID = &id
+			album.BandId = &id
 		}
 
 		albumVM, err := viewModelAlbum.GetAlbumViewModel(album)
@@ -107,12 +105,14 @@ func PostAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.DB.Exec("INSERT INTO albums (title, price, artist_id, band_id) VALUES (?, ?, ?, ?)",
-		newAlbum.Title, newAlbum.Price, newAlbum.ArtistID, newAlbum.BandID)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+	success := utils.ExecuteWithTransaction(w,
+		"INSERT INTO albums (title, price, artist_id, band_id) VALUES (?, ?, ?, ?)",
+		newAlbum.Title, newAlbum.Price, newAlbum.ArtistId, newAlbum.BandId)
+
+	if !success {
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
@@ -124,33 +124,28 @@ func UpdateAlbumByID(w http.ResponseWriter, r *http.Request, id int) bool {
 		return false
 	}
 
-	_, err := db.DB.Exec("UPDATE albums SET title = ?, price = ?, artist_id = ?, band_id = ? WHERE id = ?",
-		updatedAlbum.Title, updatedAlbum.Price, updatedAlbum.ArtistID, updatedAlbum.BandID, id)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+	success := utils.ExecuteWithTransaction(w,
+		"UPDATE albums SET title = ?, price = ?, artist_id = ?, band_id = ? WHERE id = ?",
+		updatedAlbum.Title, updatedAlbum.Price, updatedAlbum.ArtistId, updatedAlbum.BandId, id)
+
+	if !success {
 		return false
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updatedAlbum)
 	return true
 }
 
-func DeleteAlbumByID(w http.ResponseWriter, r *http.Request, id int) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func DeleteAlbumByID(w http.ResponseWriter, id int) bool {
+	success := utils.ExecuteWithTransaction(w,
+		"DELETE FROM albums WHERE id = ?",
+		id)
 
-	tx, err := db.DB.BeginTx(ctx, nil)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+	if !success {
 		return false
 	}
 
-	_, err = tx.Exec("DELETE FROM albums WHERE id = ?", id)
-	if err != nil {
-		tx.Rollback()
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
-		return false
-	}
 	w.WriteHeader(http.StatusNoContent)
 	return true
 }

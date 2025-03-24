@@ -28,7 +28,7 @@ func TestGetArtists(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "first_name", "last_name", "nationality", "birth_date", "age", "alive", "sex_id", "title_id", "band_id"}).
 		AddRow(1, "Ed", "Sheeran", "British", "1991-02-17", 32, true, nil, nil, nil)
 
-	mock.ExpectQuery("SELECT id, first_name, alst_name, nationality, birth_date, age, alive, sex_id, title_id, band_id FROM artists").
+	mock.ExpectQuery("SELECT id, first_name, last_name, nationality, birth_date, age, alive, sex_id, title_id, band_id FROM artists").
 		WillReturnRows(rows)
 
 	req, err := http.NewRequest("GET", "/artists", nil)
@@ -144,7 +144,7 @@ func TestPostArtist(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 
-	mock.ExpectExec("INSERT INTO artist").
+	mock.ExpectExec("INSERT INTO artists").
 		WithArgs(artist.Id, artist.FirstName, artist.LastName, artist.Nationality, artist.BirthDate, artist.Age, artist.Alive, artist.SexId, artist.TitleId, artist.BandId).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -226,7 +226,7 @@ func TestDeleteArtistByID(t *testing.T) {
 	db.DB = mockDB
 
 	t.Run("Successful delete", func(t *testing.T) {
-		req, err := http.NewRequest("DELETE", "/artists/1", nil)
+		_, err := http.NewRequest("DELETE", "/artists/1", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -236,7 +236,7 @@ func TestDeleteArtistByID(t *testing.T) {
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
-		result := DeleteArtistByID(rr, req, 1)
+		result := DeleteArtistByID(rr, 1)
 
 		if !result {
 			t.Errorf("DeleteArtistByID returned false, expected true")

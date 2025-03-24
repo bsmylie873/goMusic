@@ -24,7 +24,7 @@ func RegisterArtistRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /artists/{id}", authentication.AuthMiddleware(
 		func(w http.ResponseWriter, r *http.Request) {
 			id, _ := strconv.Atoi(r.PathValue("id"))
-			services.DeleteArtistByID(w, r, id)
+			services.DeleteArtistByID(w, id)
 		},
 	))
 }

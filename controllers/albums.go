@@ -24,7 +24,7 @@ func RegisterAlbumRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /albums/{id}", authentication.AuthMiddleware(
 		func(w http.ResponseWriter, r *http.Request) {
 			id, _ := strconv.Atoi(r.PathValue("id"))
-			services.DeleteAlbumByID(w, r, id)
+			services.DeleteAlbumByID(w, id)
 		},
 	))
 }

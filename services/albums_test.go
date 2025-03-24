@@ -143,8 +143,8 @@ func TestPostAlbum(t *testing.T) {
 		ID:       1,
 		Title:    "Parachutes",
 		Price:    9.99,
-		BandID:   &bandID,
-		ArtistID: nil,
+		BandId:   &bandID,
+		ArtistId: nil,
 	}
 
 	albumJSON, _ := json.Marshal(album)
@@ -156,7 +156,7 @@ func TestPostAlbum(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	mock.ExpectExec("INSERT INTO albums").
-		WithArgs(album.ID, album.Title, album.Price, album.ArtistID, album.BandID).
+		WithArgs(album.ID, album.Title, album.Price, album.ArtistId, album.BandId).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	PostAlbum(rr, req)
@@ -237,17 +237,13 @@ func TestDeleteAlbumByID(t *testing.T) {
 	db.DB = mockDB
 
 	t.Run("Successful delete", func(t *testing.T) {
-		req, err := http.NewRequest("DELETE", "/bands/1", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
 		rr := httptest.NewRecorder()
 
 		mock.ExpectExec("DELETE FROM albums WHERE id = ?").
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
-		result := DeleteAlbumByID(rr, req, 1)
+		result := DeleteAlbumByID(rr, 1)
 
 		if !result {
 			t.Errorf("DeleteAlbumByID returned false, expected true")

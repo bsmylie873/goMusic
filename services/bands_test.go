@@ -235,7 +235,7 @@ func TestDeleteBandByID(t *testing.T) {
 	db.DB = mockDB
 
 	t.Run("Successful delete", func(t *testing.T) {
-		req, err := http.NewRequest("DELETE", "/bands/1", nil)
+		_, err := http.NewRequest("DELETE", "/bands/1", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -245,7 +245,7 @@ func TestDeleteBandByID(t *testing.T) {
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
-		result := DeleteBandByID(rr, req, 1)
+		result := DeleteBandByID(rr, 1)
 
 		if !result {
 			t.Errorf("DeleteBandByID returned false, expected true")
