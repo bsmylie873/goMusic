@@ -35,7 +35,7 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 
 	for _, album := range albums {
 		vm := AlbumViewModel{
-			Id:    &album.ID,
+			Id:    &album.Id,
 			Title: album.Title,
 			Price: album.Price,
 			Songs: []BasicSongViewModel{},
@@ -90,7 +90,7 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 
 func GetAlbumViewModel(album models.Album) (DetailedAlbumViewModel, error) {
 	vm := DetailedAlbumViewModel{
-		Id:    &album.ID,
+		Id:    &album.Id,
 		Title: album.Title,
 		Price: album.Price,
 	}
@@ -151,7 +151,7 @@ func GetAlbumViewModel(album models.Album) (DetailedAlbumViewModel, error) {
 		}
 	}
 
-	rows, err := db.DB.Query("SELECT id, title, length, price FROM songs WHERE album_id = ?", album.ID)
+	rows, err := db.DB.Query("SELECT id, title, length, price FROM songs WHERE album_id = ?", album.Id)
 	if err != nil {
 		return DetailedAlbumViewModel{}, err
 	}
@@ -180,7 +180,7 @@ func GetAlbumViewModel(album models.Album) (DetailedAlbumViewModel, error) {
 
 func GetBasicAlbumViewModel(album models.Album) BasicAlbumViewModel {
 	return BasicAlbumViewModel{
-		Id:    &album.ID,
+		Id:    &album.Id,
 		Title: album.Title,
 		Price: album.Price,
 	}

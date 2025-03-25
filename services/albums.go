@@ -25,7 +25,7 @@ func GetAlbums(w http.ResponseWriter, r *http.Request) {
 		var album models.Album
 		var artistID, bandID sql.NullInt64
 
-		err := rows.Scan(&album.ID, &album.Title, &album.Price, &artistID, &bandID)
+		err := rows.Scan(&album.Id, &album.Title, &album.Price, &artistID, &bandID)
 		if err != nil {
 			http.Error(w, "Error scanning row: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -69,7 +69,7 @@ func GetAlbumByID(w http.ResponseWriter, r *http.Request, id int) {
 		var album models.Album
 		var artistID, bandID sql.NullInt64
 
-		err := row.Scan(&album.ID, &album.Title, &album.Price, &artistID, &bandID)
+		err := row.Scan(&album.Id, &album.Title, &album.Price, &artistID, &bandID)
 		if err != nil {
 			http.Error(w, "Error scanning row: "+err.Error(), http.StatusInternalServerError)
 			return

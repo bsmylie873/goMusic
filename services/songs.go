@@ -53,6 +53,7 @@ func GetSongByID(w http.ResponseWriter, id int) {
 		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if row.Next() {
 		var song models.Song
 
@@ -82,10 +83,11 @@ func PostSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.DB.Exec("INSERT INTO songs (title, length, price, album_id, artist_id, band_id) VALUES (?, ?, ?, ?, ?, ?)",
+	success := utils.ExecuteWithTransaction(w,
+		"INSERT INTO songs (title, length, price, album_id, artist_id, band_id) VALUES (?, ?, ?, ?, ?, ?)",
 		newSong.Title, newSong.Length, newSong.Price, newSong.AlbumId, newSong.ArtistId, newSong.BandId)
-	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+
+	if !success {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

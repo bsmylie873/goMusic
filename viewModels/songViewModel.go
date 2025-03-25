@@ -159,11 +159,11 @@ func GetSongViewModel(song models.Song) (DetailedSongViewModel, error) {
 
 		for albumRows.Next() {
 			var album models.Album
-			if err := albumRows.Scan(&album.ID, &album.Title, &album.Price, &album.ArtistId, &album.BandId); err != nil {
+			if err := albumRows.Scan(&album.Id, &album.Title, &album.Price, &album.ArtistId, &album.BandId); err != nil {
 				return DetailedSongViewModel{}, err
 			}
 			albumVM := AlbumViewModel{
-				Id:    &album.ID,
+				Id:    &album.Id,
 				Title: album.Title,
 				Price: album.Price,
 			}

@@ -63,17 +63,17 @@ func TestGetSongByID(t *testing.T) {
 	db.DB = mockDB
 
 	t.Run("Song found", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "title", "length", "price", "album_id"}).
-			AddRow(1, "Yellow", 4.31, 1.29, 1)
+		rows := sqlmock.NewRows([]string{"id", "title", "length", "price"}).
+			AddRow(1, "Yellow", 431, 1.29)
 
-		mock.ExpectQuery("SELECT id, title, length, price, album_id FROM songs WHERE id = ?").
+		mock.ExpectQuery("SELECT id, title, length, price FROM songs WHERE id = ?").
 			WithArgs(1).
 			WillReturnRows(rows)
 
-		albumRows := sqlmock.NewRows([]string{"id", "title", "price"}).
-			AddRow(1, "Parachutes", 9.99)
+		albumRows := sqlmock.NewRows([]string{"id", "title", "price", "artist_id", "band_id"}).
+			AddRow(1, "Album Title", 9.99, 2, 3)
 
-		mock.ExpectQuery("SELECT id, title, price FROM albums WHERE id = ?").
+		mock.ExpectQuery("SELECT a.id, a.title, a.price, a.artist_id, a.band_id FROM albums a JOIN album_songs sa ON a.id = sa.album_id WHERE sa.song_id = ?").
 			WithArgs(1).
 			WillReturnRows(albumRows)
 
@@ -95,9 +95,9 @@ func TestGetSongByID(t *testing.T) {
 	})
 
 	t.Run("Song not found", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "title", "length", "price", "album_id"})
+		rows := sqlmock.NewRows([]string{"id", "title", "length", "price"})
 
-		mock.ExpectQuery("SELECT id, title, length, price, album_id FROM songs WHERE id = ?").
+		mock.ExpectQuery("SELECT id, title, length, price FROM songs WHERE id = \\?").
 			WithArgs(999).
 			WillReturnRows(rows)
 
@@ -133,17 +133,15 @@ func TestPostSong(t *testing.T) {
 
 	db.DB = mockDB
 
-	albumId := 1
 	song := models.Song{
-		Title:   "Yellow",
-		Length:  431,
-		Price:   1.29,
-		AlbumId: &albumId,
+		Title:  "Yellow",
+		Length: 431,
+		Price:  1.29,
 	}
 
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO songs").
-		WithArgs(song.Title, song.Length, song.Price, song.AlbumId).
+		WithArgs(song.Title, song.Length, song.Price, nil, nil, nil).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -180,17 +178,15 @@ func TestUpdateSongByID(t *testing.T) {
 
 	db.DB = mockDB
 
-	albumId := 1
 	song := models.Song{
-		Title:   "Yellow (2023 Remix)",
-		Length:  445,
-		Price:   1.49,
-		AlbumId: &albumId,
+		Title:  "Yellow (2023 Remix)",
+		Length: 445,
+		Price:  1.49,
 	}
 
 	mock.ExpectBegin()
 	mock.ExpectExec("UPDATE songs SET").
-		WithArgs(song.Title, song.Length, song.Price, song.AlbumId, 1).
+		WithArgs(song.Title, song.Length, song.Price, nil, nil, nil, 1).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 

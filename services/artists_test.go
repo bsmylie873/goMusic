@@ -126,14 +126,18 @@ func TestPostArtist(t *testing.T) {
 
 	db.DB = mockDB
 
+	sexId := 1
+	titleId := 1
 	artist := models.Artist{
-		Id:          1,
 		FirstName:   "Ed",
 		LastName:    "Sheeran",
 		Nationality: "British",
 		BirthDate:   "1991-02-17",
 		Age:         32,
 		Alive:       true,
+		SexId:       &sexId,
+		TitleId:     &titleId,
+		BandId:      nil,
 	}
 
 	artistJSON, _ := json.Marshal(artist)
@@ -144,9 +148,11 @@ func TestPostArtist(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 
+	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO artists").
-		WithArgs(artist.Id, artist.FirstName, artist.LastName, artist.Nationality, artist.BirthDate, artist.Age, artist.Alive, artist.SexId, artist.TitleId, artist.BandId).
+		WithArgs(artist.FirstName, artist.LastName, artist.Nationality, artist.BirthDate, artist.Age, artist.Alive, artist.SexId, artist.TitleId, artist.BandId).
 		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
 	PostArtist(rr, req)
 
@@ -172,7 +178,8 @@ func TestUpdateArtistByID(t *testing.T) {
 	defer mockDB.Close()
 
 	db.DB = mockDB
-
+	sexId := 1
+	titleId := 1
 	t.Run("Successful update", func(t *testing.T) {
 		artist := models.Artist{
 			FirstName:   "Ed",
@@ -181,6 +188,9 @@ func TestUpdateArtistByID(t *testing.T) {
 			BirthDate:   "1991-02-17",
 			Age:         32,
 			Alive:       true,
+			SexId:       &sexId,
+			TitleId:     &titleId,
+			BandId:      nil,
 		}
 
 		artistJSON, _ := json.Marshal(artist)
@@ -191,9 +201,11 @@ func TestUpdateArtistByID(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		rr := httptest.NewRecorder()
 
+		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE artists SET").
 			WithArgs(artist.FirstName, artist.LastName, artist.Nationality, artist.BirthDate, artist.Age, artist.Alive, artist.SexId, artist.TitleId, artist.BandId, 1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		result := UpdateArtistByID(rr, req, 1)
 
@@ -232,9 +244,11 @@ func TestDeleteArtistByID(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 
+		mock.ExpectBegin()
 		mock.ExpectExec("DELETE FROM artists WHERE id = ?").
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		result := DeleteArtistByID(rr, 1)
 

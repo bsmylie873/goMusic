@@ -136,7 +136,6 @@ func TestPostBand(t *testing.T) {
 	db.DB = mockDB
 
 	band := models.Band{
-		Id:              1,
 		Name:            "Coldplay",
 		Nationality:     "British",
 		NumberOfMembers: 4,
@@ -153,9 +152,11 @@ func TestPostBand(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 
+	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO bands").
-		WithArgs(band.Id, band.Name, band.Nationality, band.NumberOfMembers, band.DateFormed, band.Age, band.Active).
+		WithArgs("Coldplay", "British", 4, "1996-01-01", 27, true).
 		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
 	PostBand(rr, req)
 
@@ -200,9 +201,11 @@ func TestUpdateBandByID(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		rr := httptest.NewRecorder()
 
+		mock.ExpectBegin()
 		mock.ExpectExec("UPDATE bands SET").
 			WithArgs(band.Name, band.Nationality, band.NumberOfMembers, band.DateFormed, band.Age, band.Active, 1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		result := UpdateBandByID(rr, req, 1)
 
@@ -241,9 +244,11 @@ func TestDeleteBandByID(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 
+		mock.ExpectBegin()
 		mock.ExpectExec("DELETE FROM bands WHERE id = ?").
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		result := DeleteBandByID(rr, 1)
 
