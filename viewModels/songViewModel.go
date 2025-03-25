@@ -28,10 +28,10 @@ func GetSongViewModels(songs []models.Song) ([]SongViewModel, error) {
 		}
 
 		albumRows, err := db.DB.Query(`
-			SELECT a.id, a.title 
-			FROM albums a
-			JOIN song_albums sa ON a.id = sa.album_id
-			WHERE sa.song_id = ?`, song.Id)
+            SELECT a.id, a.title
+            FROM albums a
+            JOIN album_songs sa ON a.id = sa.album_id
+            WHERE sa.song_id = ?`, song.Id)
 		if err != nil && err != sql.ErrNoRows {
 			return nil, err
 		}
@@ -56,10 +56,10 @@ func GetSongViewModels(songs []models.Song) ([]SongViewModel, error) {
 		}
 
 		artistRows, err := db.DB.Query(`
-			SELECT a.id, a.first_name, a.last_name 
-			FROM artists a
-			JOIN song_artists sa ON a.id = sa.artist_id
-			WHERE sa.song_id = ?`, song.Id)
+            SELECT a.id, a.first_name, a.last_name
+            FROM artists a
+            JOIN artist_songs sa ON a.id = sa.artist_id
+            WHERE sa.song_id = ?`, song.Id)
 		if err != nil && err != sql.ErrNoRows {
 			return nil, err
 		}
@@ -84,10 +84,10 @@ func GetSongViewModels(songs []models.Song) ([]SongViewModel, error) {
 		}
 
 		bandRows, err := db.DB.Query(`
-			SELECT b.id, b.name 
-			FROM bands b
-			JOIN song_bands sb ON b.id = sb.band_id
-			WHERE sb.song_id = ?`, song.Id)
+            SELECT b.id, b.name
+            FROM bands b
+            JOIN band_songs sb ON b.id = sb.band_id
+            WHERE sb.song_id = ?`, song.Id)
 		if err != nil && err != sql.ErrNoRows {
 			return nil, err
 		}
@@ -126,9 +126,9 @@ func GetSongViewModel(song models.Song) (SongViewModel, error) {
 	}
 
 	albumRows, err := db.DB.Query(`
-        SELECT a.id, a.title, a.price, a.artist_id, a.band_id 
+        SELECT a.id, a.title, a.price, a.artist_id, a.band_id
         FROM albums a
-        JOIN song_albums sa ON a.id = sa.album_id
+        JOIN album_songs sa ON a.id = sa.album_id
         WHERE sa.song_id = ?`, song.Id)
 	if err != nil && err != sql.ErrNoRows {
 		return SongViewModel{}, err
@@ -158,9 +158,9 @@ func GetSongViewModel(song models.Song) (SongViewModel, error) {
 	}
 
 	artistRows, err := db.DB.Query(`
-        SELECT a.* 
+        SELECT a.*
         FROM artists a
-        JOIN song_artists sa ON a.id = sa.artist_id
+        JOIN artist_songs sa ON a.id = sa.artist_id
         WHERE sa.song_id = ?`, song.Id)
 	if err != nil && err != sql.ErrNoRows {
 		return SongViewModel{}, err
@@ -194,7 +194,7 @@ func GetSongViewModel(song models.Song) (SongViewModel, error) {
 	bandRows, err := db.DB.Query(`
         SELECT b.*
         FROM bands b
-        JOIN song_bands sb ON b.id = sb.band_id
+        JOIN band_songs sb ON b.id = sb.band_id
         WHERE sb.song_id = ?`, song.Id)
 	if err != nil && err != sql.ErrNoRows {
 		return SongViewModel{}, err
