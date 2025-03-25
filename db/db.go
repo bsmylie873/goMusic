@@ -92,6 +92,33 @@ func InitDB(filepath string) error {
 	  FOREIGN KEY (band_id) REFERENCES bands(id) ON DELETE CASCADE
 	)`)
 
+	_, err = DB.Exec(`
+	CREATE TABLE IF NOT EXISTS album_songs (
+		album_id INTEGER NOT NULL,
+		song_id INTEGER NOT NULL,
+		PRIMARY KEY (album_id, song_id),
+		FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE CASCADE,
+		FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+	)`)
+
+	_, err = DB.Exec(`
+	CREATE TABLE IF NOT EXISTS artist_songs (
+		artist_id INTEGER NOT NULL,
+		song_id INTEGER NOT NULL,
+		PRIMARY KEY (artist_id, song_id),
+		FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE,
+		FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+	)`)
+
+	_, err = DB.Exec(`
+	CREATE TABLE IF NOT EXISTS band_songs (
+		band_id INTEGER NOT NULL,
+		song_id INTEGER NOT NULL,
+		PRIMARY KEY (band_id, song_id),
+		FOREIGN KEY (band_id) REFERENCES bands(id) ON DELETE CASCADE,
+		FOREIGN KEY (song_id) REFERENCES songs(id) ON DELETE CASCADE
+	)`)
+
 	return err
 }
 
@@ -225,6 +252,60 @@ func SeedDB() error {
 			_, err := DB.Exec(
 				"INSERT INTO songs (id, title, length, price, album_id, artist_id, band_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
 				s.ID, s.Title, s.Length, s.Price, s.AlbumID, s.ArtistID, s.BandID)
+			if err != nil {
+				return err
+			}
+		}
+
+		albumSongs := []struct {
+			AlbumID int
+			SongID  int
+		}{
+			{1, 1},
+			{1, 2},
+			{2, 3},
+			{4, 4},
+			{4, 5},
+			{5, 6},
+		}
+		for _, as := range albumSongs {
+			_, err := DB.Exec(
+				"INSERT INTO album_songs (album_id, song_id) VALUES (?, ?)",
+				as.AlbumID, as.SongID)
+			if err != nil {
+				return err
+			}
+		}
+
+		artistSongs := []struct {
+			ArtistID int
+			SongID   int
+		}{
+			{1, 1},
+			{1, 2},
+			{2, 3},
+		}
+		for _, as := range artistSongs {
+			_, err := DB.Exec(
+				"INSERT INTO artist_songs (artist_id, song_id) VALUES (?, ?)",
+				as.ArtistID, as.SongID)
+			if err != nil {
+				return err
+			}
+		}
+
+		bandSongs := []struct {
+			BandID int
+			SongID int
+		}{
+			{3, 4},
+			{3, 5},
+			{2, 6},
+		}
+		for _, bs := range bandSongs {
+			_, err := DB.Exec(
+				"INSERT INTO band_songs (band_id, song_id) VALUES (?, ?)",
+				bs.BandID, bs.SongID)
 			if err != nil {
 				return err
 			}

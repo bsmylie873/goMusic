@@ -18,6 +18,12 @@ type ArtistViewModel struct {
 	Title       string `json:"title"`
 }
 
+type BasicArtistViewModel struct {
+	Id        *int   `json:"id,omitempty"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+
 func GetArtistViewModels(artists []models.Artist) ([]ArtistViewModel, error) {
 	result := make([]ArtistViewModel, 0, len(artists))
 
@@ -94,4 +100,12 @@ func GetArtistViewModel(artist models.Artist) (ArtistViewModel, error) {
 	}
 
 	return vm, nil
+}
+
+func GetBasicArtistViewModel(artist models.Artist) BasicArtistViewModel {
+	return BasicArtistViewModel{
+		Id:        &artist.Id,
+		FirstName: artist.FirstName,
+		LastName:  artist.LastName,
+	}
 }

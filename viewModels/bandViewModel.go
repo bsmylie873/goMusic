@@ -14,6 +14,11 @@ type BandViewModel struct {
 	Active          bool   `json:"active"`
 }
 
+type BasicBandViewModel struct {
+	Id   *int   `json:"id,omitempty"`
+	Name string `json:"name"`
+}
+
 func GetBandViewModels(bands []models.Band) ([]BandViewModel, error) {
 	result := make([]BandViewModel, 0, len(bands))
 	for _, band := range bands {
@@ -42,4 +47,11 @@ func GetBandViewModel(band models.Band) (BandViewModel, error) {
 		Active:          band.Active,
 	}
 	return vm, nil
+}
+
+func GetBasicBandViewModel(band models.Band) BasicBandViewModel {
+	return BasicBandViewModel{
+		Id:   &band.Id,
+		Name: band.Name,
+	}
 }

@@ -6,13 +6,28 @@ import (
 	"goMusic/models"
 )
 
+type DetailedAlbumViewModel struct {
+	Id     *int                 `json:"id,omitempty"`
+	Title  string               `json:"title"`
+	Price  float64              `json:"price"`
+	Artist *ArtistViewModel     `json:"artist,omitempty"`
+	Band   *BandViewModel       `json:"band,omitempty"`
+	Songs  []BasicSongViewModel `json:"songs,omitempty"`
+}
+
 type AlbumViewModel struct {
-	Id     *int             `json:"id,omitempty"`
-	Title  string           `json:"title"`
-	Price  float64          `json:"price"`
-	Artist *ArtistViewModel `json:"artist,omitempty"`
-	Band   *BandViewModel   `json:"band,omitempty"`
-	Songs  []SongViewModel  `json:"songs,omitempty"`
+	Id     *int                  `json:"id,omitempty"`
+	Title  string                `json:"title"`
+	Price  float64               `json:"price"`
+	Artist *BasicArtistViewModel `json:"artist,omitempty"`
+	Band   *BasicBandViewModel   `json:"band,omitempty"`
+	Songs  []BasicSongViewModel  `json:"songs,omitempty"`
+}
+
+type BasicAlbumViewModel struct {
+	Id    *int    `json:"id,omitempty"`
+	Title string  `json:"title"`
+	Price float64 `json:"price"`
 }
 
 func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
@@ -23,23 +38,15 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 			Id:    &album.ID,
 			Title: album.Title,
 			Price: album.Price,
-			Songs: []SongViewModel{},
+			Songs: []BasicSongViewModel{},
 		}
 
 		if album.ArtistId != nil {
-			var artist ArtistViewModel
-			var bandName sql.NullString
+			var artist BasicArtistViewModel
 			err := db.DB.QueryRow(`
 			SELECT 
 			  a.first_name, 
-			  a.last_name, 
-			  a.nationality, 
-			  a.birth_date, 
-			  a.age, 
-			  a.alive, 
-			  s.name, 
-			  t.name, 
-			  b.name
+			  a.last_name
 			FROM artists a
 			LEFT JOIN sexes s ON a.sex_id = s.id
 			LEFT JOIN titles t ON a.title_id = t.id
@@ -48,13 +55,6 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 			).Scan(
 				&artist.FirstName,
 				&artist.LastName,
-				&artist.Nationality,
-				&artist.BirthDate,
-				&artist.Age,
-				&artist.Alive,
-				&artist.Sex,
-				&artist.Title,
-				&bandName,
 			)
 
 			if err != nil && err != sql.ErrNoRows {
@@ -67,11 +67,11 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 		}
 
 		if album.BandId != nil {
-			var band BandViewModel
+			var band BasicBandViewModel
 			err := db.DB.QueryRow(
-				"SELECT name, nationality, number_of_members, date_formed, age, active FROM bands WHERE id = ?",
+				"SELECT name FROM bands WHERE id = ?",
 				*album.BandId,
-			).Scan(&band.Name, &band.Nationality, &band.NumberOfMembers, &band.DateFormed, &band.Age, &band.Active)
+			).Scan(&band.Name)
 
 			if err != nil && err != sql.ErrNoRows {
 				return nil, err
@@ -88,8 +88,8 @@ func GetAlbumViewModels(albums []models.Album) ([]AlbumViewModel, error) {
 	return result, nil
 }
 
-func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
-	vm := AlbumViewModel{
+func GetAlbumViewModel(album models.Album) (DetailedAlbumViewModel, error) {
+	vm := DetailedAlbumViewModel{
 		Id:    &album.ID,
 		Title: album.Title,
 		Price: album.Price,
@@ -127,7 +127,7 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 		)
 
 		if err != nil && err != sql.ErrNoRows {
-			return AlbumViewModel{}, err
+			return DetailedAlbumViewModel{}, err
 		}
 
 		if err != sql.ErrNoRows {
@@ -143,7 +143,7 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 		).Scan(&band.Name, &band.Nationality, &band.NumberOfMembers, &band.DateFormed, &band.Age, &band.Active)
 
 		if err != nil && err != sql.ErrNoRows {
-			return AlbumViewModel{}, err
+			return DetailedAlbumViewModel{}, err
 		}
 
 		if err != sql.ErrNoRows {
@@ -153,17 +153,17 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 
 	rows, err := db.DB.Query("SELECT id, title, length, price FROM songs WHERE album_id = ?", album.ID)
 	if err != nil {
-		return AlbumViewModel{}, err
+		return DetailedAlbumViewModel{}, err
 	}
 	defer rows.Close()
 
-	vm.Songs = []SongViewModel{}
+	vm.Songs = []BasicSongViewModel{}
 	for rows.Next() {
-		var song SongViewModel
+		var song BasicSongViewModel
 		var songID int
 
 		if err := rows.Scan(&songID, &song.Title, &song.Length, &song.Price); err != nil {
-			return AlbumViewModel{}, err
+			return DetailedAlbumViewModel{}, err
 		}
 
 		song.ID = &songID
@@ -172,8 +172,16 @@ func GetAlbumViewModel(album models.Album) (AlbumViewModel, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		return AlbumViewModel{}, err
+		return DetailedAlbumViewModel{}, err
 	}
 
 	return vm, nil
+}
+
+func GetBasicAlbumViewModel(album models.Album) BasicAlbumViewModel {
+	return BasicAlbumViewModel{
+		Id:    &album.ID,
+		Title: album.Title,
+		Price: album.Price,
+	}
 }
