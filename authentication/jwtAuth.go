@@ -6,10 +6,8 @@ import (
 	"os"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v4"
 )
-
-var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 type Claims struct {
 	UserID int `json:"user_id"`
@@ -26,7 +24,7 @@ func GenerateToken(userID int) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtKey)
+	return token.SignedString(getJWTKey())
 }
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
@@ -44,7 +42,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		claims := &Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+			return getJWTKey(), nil
 		})
 
 		if err != nil || !token.Valid {
@@ -56,4 +54,8 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithValue(ctx, "userID", claims.UserID)
 		next(w, r.WithContext(ctx))
 	}
+}
+
+func getJWTKey() []byte {
+	return []byte(os.Getenv("JWT_SECRET_KEY"))
 }
