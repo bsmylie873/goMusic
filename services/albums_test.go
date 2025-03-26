@@ -33,16 +33,12 @@ func TestGetAlbums(t *testing.T) {
 	mock.ExpectQuery("SELECT id, title, price, artist_id, band_id FROM albums").
 		WillReturnRows(rows)
 
-	bandRows := sqlmock.NewRows([]string{"name", "nationality", "number_of_members", "date_formed", "age", "active"}).
-		AddRow("Coldplay", "British", 4, "1996-01-01", 27, true)
+	bandRows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Coldplay")
 
-	mock.ExpectQuery("SELECT name, nationality, number_of_members, date_formed, age, active FROM bands WHERE id = ?").
+	mock.ExpectQuery("SELECT name FROM bands WHERE id = ?").
 		WithArgs(1).
 		WillReturnRows(bandRows)
-
-	songRows := sqlmock.NewRows([]string{"id", "title", "length", "price"})
-	mock.ExpectQuery("SELECT id, title, length, price FROM songs").
-		WillReturnRows(songRows)
 
 	req, err := http.NewRequest("GET", "/albums", nil)
 	if err != nil {

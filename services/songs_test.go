@@ -25,11 +25,32 @@ func TestGetSongs(t *testing.T) {
 
 	db.DB = mockDB
 
-	rows := sqlmock.NewRows([]string{"id", "title", "length", "price", "album_id"}).
-		AddRow(1, "Yellow", 4.31, 1.29, 1)
+	rows := sqlmock.NewRows([]string{"id", "title", "length", "price"}).
+		AddRow(1, "Yellow", 431, 1.29)
 
-	mock.ExpectQuery("SELECT id, title, length, price, album_id FROM songs").
+	mock.ExpectQuery("SELECT id, title, length, price FROM songs").
 		WillReturnRows(rows)
+
+	albumRows := sqlmock.NewRows([]string{"id", "title", "price"}).
+		AddRow(1, "Parachutes", 29.99)
+
+	mock.ExpectQuery("SELECT a.id, a.title, a.price FROM albums a JOIN album_songs sa ON a.id = sa.album_id WHERE sa.song_id = ?").
+		WithArgs(1).
+		WillReturnRows(albumRows)
+
+	artistRows := sqlmock.NewRows([]string{"id", "first_name", "last_name"}).
+		AddRow(1, "Chris", "Martin")
+
+	mock.ExpectQuery("SELECT a.id, a.first_name, a.last_name FROM artists a JOIN artist_songs sa ON a.id = sa.artist_id LEFT JOIN sexes s ON a.sex_id = s.id LEFT JOIN titles t ON a.title_id = t.id WHERE sa.song_id = ?").
+		WithArgs(1).
+		WillReturnRows(artistRows)
+
+	bandRows := sqlmock.NewRows([]string{"id", "name"}).
+		AddRow(1, "Coldplay")
+
+	mock.ExpectQuery("SELECT b.id, b.name FROM bands b JOIN band_songs sb ON b.id = sb.band_id WHERE sb.song_id = ?").
+		WithArgs(1).
+		WillReturnRows(bandRows)
 
 	req, err := http.NewRequest("GET", "/songs", nil)
 	if err != nil {
@@ -77,6 +98,41 @@ func TestGetSongByID(t *testing.T) {
 			WithArgs(1).
 			WillReturnRows(albumRows)
 
+		artistRows := sqlmock.NewRows([]string{"first_name", "last_name"}).
+			AddRow("Chris", "Martin")
+
+		mock.ExpectQuery("SELECT a.first_name, a.last_name FROM artists a WHERE a.id=?").
+			WithArgs(2).
+			WillReturnRows(artistRows)
+
+		artistRows2 := sqlmock.NewRows([]string{"id", "first_name", "last_name", "nationality", "birth_date", "age", "alive", "sex_id", "title_id", "band_id"}).
+			AddRow(1, "Chris", "Martin", "British", "1977-03-02", 44, true, 1, 1, nil)
+
+		mock.ExpectQuery("SELECT a.* FROM artists a JOIN artist_songs sa ON a.id = sa.artist_id WHERE sa.song_id = ?").
+			WithArgs(1).
+			WillReturnRows(artistRows2)
+
+		sexRows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Male")
+
+		mock.ExpectQuery("SELECT name FROM sexes WHERE id = ?").
+			WithArgs(1).
+			WillReturnRows(sexRows)
+
+		titleRows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Mr")
+
+		mock.ExpectQuery("SELECT name FROM titles WHERE id = ?").
+			WithArgs(1).
+			WillReturnRows(titleRows)
+
+		bandRows := sqlmock.NewRows([]string{"id", "name", "nationality", "number_of_members", "date_formed", "age", "active"}).
+			AddRow(1, "Coldplay", "British", 4, "1996-01-16", 25, true)
+
+		mock.ExpectQuery("SELECT b.* FROM bands b JOIN band_songs sb ON b.id = sb.band_id WHERE sb.song_id = ?").
+			WithArgs(1).
+			WillReturnRows(bandRows)
+
 		_, err := http.NewRequest("GET", "/songs/1", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -97,7 +153,7 @@ func TestGetSongByID(t *testing.T) {
 	t.Run("Song not found", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"id", "title", "length", "price"})
 
-		mock.ExpectQuery("SELECT id, title, length, price FROM songs WHERE id = \\?").
+		mock.ExpectQuery("SELECT id, title, length, price FROM songs WHERE id = ?").
 			WithArgs(999).
 			WillReturnRows(rows)
 
