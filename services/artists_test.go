@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/services"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -37,7 +38,7 @@ func TestGetArtists(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 
-	GetArtists(rr, req)
+	services.GetArtists(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -76,7 +77,7 @@ func TestGetArtistByID(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		GetArtistByID(rr, req, 1)
+		services.GetArtistByID(rr, req, 1)
 
 		if status := rr.Code; status != http.StatusOK {
 			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -100,7 +101,7 @@ func TestGetArtistByID(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		GetArtistByID(rr, req, 999)
+		services.GetArtistByID(rr, req, 999)
 
 		if status := rr.Code; status != http.StatusNotFound {
 			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
@@ -154,7 +155,7 @@ func TestPostArtist(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
-	PostArtist(rr, req)
+	services.PostArtist(rr, req)
 
 	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
@@ -207,7 +208,7 @@ func TestUpdateArtistByID(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
-		result := UpdateArtistByID(rr, req, 1)
+		result := services.UpdateArtistByID(rr, req, 1)
 
 		if !result {
 			t.Errorf("UpdateArtistByID returned false, expected true")
@@ -250,7 +251,7 @@ func TestDeleteArtistByID(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
-		result := DeleteArtistByID(rr, 1)
+		result := services.DeleteArtistByID(rr, 1)
 
 		if !result {
 			t.Errorf("DeleteArtistByID returned false, expected true")

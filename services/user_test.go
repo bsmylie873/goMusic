@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/services"
 	"goMusic/viewModels"
 	"net/http"
 	"net/http/httptest"
@@ -45,7 +46,7 @@ func TestRegisterUser(t *testing.T) {
 		req := httptest.NewRequest("POST", "/register", bytes.NewBuffer(reqJSON))
 		w := httptest.NewRecorder()
 
-		RegisterUser(w, req)
+		services.RegisterUser(w, req)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 
@@ -57,13 +58,12 @@ func TestRegisterUser(t *testing.T) {
 	})
 
 	t.Run("invalid request body", func(t *testing.T) {
-		//mock := setupMockDB(t)
 		defer db.DB.Close()
 
 		req := httptest.NewRequest("POST", "/register", bytes.NewBufferString("invalid json"))
 		w := httptest.NewRecorder()
 
-		RegisterUser(w, req)
+		services.RegisterUser(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
@@ -85,7 +85,7 @@ func TestRegisterUser(t *testing.T) {
 		req := httptest.NewRequest("POST", "/register", bytes.NewBuffer(reqJSON))
 		w := httptest.NewRecorder()
 
-		RegisterUser(w, req)
+		services.RegisterUser(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
@@ -113,7 +113,7 @@ func TestLoginUser(t *testing.T) {
 		req := httptest.NewRequest("POST", "/login", bytes.NewBuffer(reqJSON))
 		w := httptest.NewRecorder()
 
-		LoginUser(w, req)
+		services.LoginUser(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
@@ -139,7 +139,7 @@ func TestLoginUser(t *testing.T) {
 		req := httptest.NewRequest("POST", "/login", bytes.NewBuffer(reqJSON))
 		w := httptest.NewRecorder()
 
-		LoginUser(w, req)
+		services.LoginUser(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
@@ -165,7 +165,7 @@ func TestLoginUser(t *testing.T) {
 		req := httptest.NewRequest("POST", "/login", bytes.NewBuffer(reqJSON))
 		w := httptest.NewRecorder()
 
-		LoginUser(w, req)
+		services.LoginUser(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
@@ -189,7 +189,7 @@ func TestGetProfile(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		GetProfile(w, req)
+		services.GetProfile(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
@@ -214,7 +214,7 @@ func TestGetProfile(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		GetProfile(w, req)
+		services.GetProfile(w, req)
 
 		assert.Equal(t, http.StatusNotFound, w.Code)
 	})
@@ -224,7 +224,7 @@ func TestGetProfile(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		GetProfile(w, req)
+		services.GetProfile(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})

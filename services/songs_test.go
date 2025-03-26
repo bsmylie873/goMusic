@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/services"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -58,7 +59,7 @@ func TestGetSongs(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 
-	GetSongs(rr, req)
+	services.GetSongs(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -139,7 +140,7 @@ func TestGetSongByID(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 
-		GetSongByID(rr, 1)
+		services.GetSongByID(rr, 1)
 
 		if status := rr.Code; status != http.StatusOK {
 			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -163,7 +164,7 @@ func TestGetSongByID(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 
-		GetSongByID(rr, 999)
+		services.GetSongByID(rr, 999)
 
 		if status := rr.Code; status != http.StatusNotFound {
 			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
@@ -209,7 +210,7 @@ func TestPostSong(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 
-	PostSong(rr, req)
+	services.PostSong(rr, req)
 
 	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
@@ -254,7 +255,7 @@ func TestUpdateSongByID(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 
-	result := UpdateSongByID(rr, req, 1)
+	result := services.UpdateSongByID(rr, req, 1)
 
 	if !result {
 		t.Errorf("UpdateSongByID returned false, expected true")
@@ -291,7 +292,7 @@ func TestDeleteSongByID(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	result := DeleteSongByID(rr, 1)
+	result := services.DeleteSongByID(rr, 1)
 
 	if !result {
 		t.Errorf("DeleteSongByID returned false, expected true")

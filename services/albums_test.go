@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/services"
 	"goMusic/viewModels"
 	"net/http"
 	"net/http/httptest"
@@ -46,7 +47,7 @@ func TestGetAlbums(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 
-	GetAlbums(rr, req)
+	services.GetAlbums(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -99,7 +100,7 @@ func TestGetAlbumByID(t *testing.T) {
 		req := httptest.NewRequest("GET", "/albums/1", nil)
 		res := httptest.NewRecorder()
 
-		GetAlbumByID(res, req, 1)
+		services.GetAlbumByID(res, req, 1)
 
 		if status := res.Code; status != http.StatusOK {
 			t.Errorf("Wrong status code: got %v want %v", status, http.StatusOK)
@@ -156,7 +157,7 @@ func TestGetAlbumByID(t *testing.T) {
 		req := httptest.NewRequest("GET", "/albums/2", nil)
 		res := httptest.NewRecorder()
 
-		GetAlbumByID(res, req, 2)
+		services.GetAlbumByID(res, req, 2)
 
 		if status := res.Code; status != http.StatusOK {
 			t.Errorf("Wrong status code: got %v want %v", status, http.StatusOK)
@@ -192,7 +193,7 @@ func TestGetAlbumByID(t *testing.T) {
 		req := httptest.NewRequest("GET", "/albums/999", nil)
 		res := httptest.NewRecorder()
 
-		GetAlbumByID(res, req, 999)
+		services.GetAlbumByID(res, req, 999)
 
 		if status := res.Code; status != http.StatusNotFound {
 			t.Errorf("Wrong status code: got %v want %v", status, http.StatusNotFound)
@@ -228,7 +229,7 @@ func TestGetAlbumByID(t *testing.T) {
 		req := httptest.NewRequest("GET", "/albums/1", nil)
 		res := httptest.NewRecorder()
 
-		GetAlbumByID(res, req, 1)
+		services.GetAlbumByID(res, req, 1)
 
 		if status := res.Code; status != http.StatusInternalServerError {
 			t.Errorf("Wrong status code: got %v want %v", status, http.StatusInternalServerError)
@@ -276,7 +277,7 @@ func TestPostAlbum(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
-	PostAlbum(rr, req)
+	services.PostAlbum(rr, req)
 
 	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
@@ -325,7 +326,7 @@ func TestUpdateAlbumByID(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
-		result := UpdateBandByID(rr, req, 1)
+		result := services.UpdateBandByID(rr, req, 1)
 
 		if !result {
 			t.Errorf("UpdateBandByID returned false, expected true")
@@ -364,7 +365,7 @@ func TestDeleteAlbumByID(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
-		result := DeleteAlbumByID(rr, 1)
+		result := services.DeleteAlbumByID(rr, 1)
 
 		if !result {
 			t.Errorf("DeleteAlbumByID returned false, expected true")

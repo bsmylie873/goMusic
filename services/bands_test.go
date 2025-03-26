@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"goMusic/db"
 	"goMusic/models"
+	"goMusic/services"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -36,7 +37,7 @@ func TestGetBands(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 
-	GetBands(rr, req)
+	services.GetBands(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -81,7 +82,7 @@ func TestGetBandByID(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		GetBandByID(rr, req, 1)
+		services.GetBandByID(rr, req, 1)
 
 		if status := rr.Code; status != http.StatusOK {
 			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
@@ -109,7 +110,7 @@ func TestGetBandByID(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		GetBandByID(rr, req, 999)
+		services.GetBandByID(rr, req, 999)
 
 		if status := rr.Code; status != http.StatusNotFound {
 			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
@@ -158,7 +159,7 @@ func TestPostBand(t *testing.T) {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
-	PostBand(rr, req)
+	services.PostBand(rr, req)
 
 	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
@@ -207,7 +208,7 @@ func TestUpdateBandByID(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
-		result := UpdateBandByID(rr, req, 1)
+		result := services.UpdateBandByID(rr, req, 1)
 
 		if !result {
 			t.Errorf("UpdateBandByID returned false, expected true")
@@ -250,7 +251,7 @@ func TestDeleteBandByID(t *testing.T) {
 			WillReturnResult(sqlmock.NewResult(0, 1))
 		mock.ExpectCommit()
 
-		result := DeleteBandByID(rr, 1)
+		result := services.DeleteBandByID(rr, 1)
 
 		if !result {
 			t.Errorf("DeleteBandByID returned false, expected true")
